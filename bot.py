@@ -5,18 +5,12 @@ from aiogram import F
 import asyncio
 import os
 
-# === 🔍 DEBUG: Проверка переменных окружения ===
-print("=== DEBUG ENVIRONMENT START ===")
-bot_token = os.getenv("BOT_TOKEN")
-print("BOT_TOKEN from os.getenv:", repr(bot_token))
-print("=== DEBUG ENVIRONMENT END ===")
+# Получение токена из переменной окружения
+TOKEN = os.getenv("BOT_TOKEN")
+if not TOKEN:
+    raise ValueError("❌ BOT_TOKEN не найден! Задай его в Replit Secrets или переменных окружения.")
 
-# === Проверка токена перед запуском ===
-if not bot_token:
-    raise ValueError("❌ BOT_TOKEN не найден! Проверь, что он задан как Service Variable в Railway и перезапусти сервис.")
-
-# === Инициализация бота ===
-bot = Bot(token=bot_token)
+bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 queue = []  # простая очередь в памяти
@@ -87,3 +81,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
