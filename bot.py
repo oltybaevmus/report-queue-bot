@@ -1,16 +1,32 @@
-from aiogram import Bot, Dispatcher, types
+import os
+import asyncio
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import Command
-from aiogram import F
-import asyncio
-import os
 
+# === 🔍 Отладка переменных окружения ===
+print("=== DEBUG INFO START ===")
+print("All environment variables (filtered):")
+for key, value in os.environ.items():
+    if "TOKEN" in key or "RAILWAY" in key:
+        print(f"{key} = {value}")
+print("===")
 TOKEN = os.getenv("BOT_TOKEN")
+print(f"BOT_TOKEN from os.getenv: {repr(TOKEN)}")
+print("=== DEBUG INFO END ===")
+
+# === Проверка наличия токена ===
+if not TOKEN:
+    raise ValueError("❌ BOT_TOKEN не найден! Проверь, что он задан в Railway Variables.")
+
+# === Инициализация бота ===
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-queue = []  # простая очередь в памяти
+# Простая очередь в памяти
+queue = []
 
+# === Клавиатура ===
 def get_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🟩 Встать в очередь", callback_data="join")],
@@ -19,6 +35,7 @@ def get_keyboard():
         [InlineKeyboardButton(text="🚫 Передумал", callback_data="cancel")]
     ])
 
+# === Текст очереди ===
 def queue_text():
     if not queue:
         return "Очередь пуста 🕊"
@@ -27,6 +44,7 @@ def queue_text():
         text += f"{i}. {user.mention_html()}\n"
     return text
 
+# === Команды и колбэки ===
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     await message.answer("Привет! 👋 Я помогу вести очередь по отчетам.", reply_markup=get_keyboard())
@@ -71,9 +89,11 @@ async def show_list(callback: types.CallbackQuery):
     await callback.message.answer(queue_text(), parse_mode="HTML", reply_markup=get_keyboard())
     await callback.answer()
 
+# === Запуск бота ===
 async def main():
-    print("Bot started...")
+    print("🚀 Bot started...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
     asyncio.run(main())
+
