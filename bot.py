@@ -5,29 +5,22 @@ from aiogram import F
 import asyncio
 import os
 
-# === 🔍 ОТЛАДКА ПЕРЕМЕННОЙ ОКРУЖЕНИЯ ===
-print("=== DEBUG INFO START ===")
-print("All environment variables (filtered):")
-for key, value in os.environ.items():
-    if "TOKEN" in key or "RAILWAY" in key:
-        print(f"{key} = {value}")
-print("===")
+# === 🔍 DEBUG: Проверка переменных окружения ===
+print("=== DEBUG ENVIRONMENT START ===")
+bot_token = os.getenv("BOT_TOKEN")
+print("BOT_TOKEN from os.getenv:", repr(bot_token))
+print("=== DEBUG ENVIRONMENT END ===")
 
-# Чтение токена
-TOKEN = os.getenv("BOT_TOKEN")
-print(f"DEBUG: BOT_TOKEN from os.getenv = {repr(TOKEN)}")
+# === Проверка токена перед запуском ===
+if not bot_token:
+    raise ValueError("❌ BOT_TOKEN не найден! Проверь, что он задан как Service Variable в Railway и перезапусти сервис.")
 
-if not TOKEN:
-    # Если токен не найден — выводим понятное сообщение
-    raise ValueError("❌ BOT_TOKEN не найден! Проверь, что переменная окружения задана в Railway и сервис использует её.")
-
-# === ИНИЦИАЛИЗАЦИЯ БОТА ===
-bot = Bot(token=TOKEN)
+# === Инициализация бота ===
+bot = Bot(token=bot_token)
 dp = Dispatcher()
 
 queue = []  # простая очередь в памяти
 
-# === КЛАВИАТУРА ===
 def get_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🟩 Встать в очередь", callback_data="join")],
@@ -36,7 +29,6 @@ def get_keyboard():
         [InlineKeyboardButton(text="🚫 Передумал", callback_data="cancel")]
     ])
 
-# === ТЕКСТ ОЧЕРЕДИ ===
 def queue_text():
     if not queue:
         return "Очередь пуста 🕊"
@@ -45,12 +37,10 @@ def queue_text():
         text += f"{i}. {user.mention_html()}\n"
     return text
 
-# === КОМАНДА /START ===
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     await message.answer("Привет! 👋 Я помогу вести очередь по отчетам.", reply_markup=get_keyboard())
 
-# === CALLBACK HANDLERS ===
 @dp.callback_query(F.data == "join")
 async def join_queue(callback: types.CallbackQuery):
     user = callback.from_user
@@ -91,7 +81,6 @@ async def show_list(callback: types.CallbackQuery):
     await callback.message.answer(queue_text(), parse_mode="HTML", reply_markup=get_keyboard())
     await callback.answer()
 
-# === MAIN ===
 async def main():
     print("Bot started...")
     await dp.start_polling(bot)
