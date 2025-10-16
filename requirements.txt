@@ -1,2 +1,3 @@
-aiogram==2.25.1
+aiogram>=3.0.0   # последняя версия 3.x, поддерживает aiohttp>=3.9 и Python 3.13
+aiohttp>=3.9,<4.0  # чтобы точно было совместимо с Python 3.13
 python-telegram-bot==20.3
